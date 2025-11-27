@@ -1,4 +1,5 @@
 from artistStats import getArtistStats
+from userStats import getUserStats
 from fastapi import FastAPI
 
 app = FastAPI()
