@@ -60,7 +60,6 @@ class RoleChecker:
                 raise HTTPException(status_code=500)
 
         except requests.RequestException:
-
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
@@ -70,5 +69,4 @@ class RoleChecker:
                 status_code=status.HTTP_401_UNAUTHORIZED
             )
 
-        # 5. Devolvemos el usuario enriquecido
         return {"user": user, "role": user_role}

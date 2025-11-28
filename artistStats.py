@@ -6,27 +6,12 @@ from fastapi import HTTPException, status
 
 def getArtistStats (uuid: str):
     load_dotenv()
-    token:str = gestor_token.get_token()
 
-    #COMPROBAR QUE ES ARTISTA Y QUE EXISTE
-    url = f"{os.getenv("USUARIOS_SERVICE_BASE_URL")}/users/{uuid}"
+    token:str = gestor_token.get_token()
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
-    try:
-        response = requests.get(url,headers=headers, timeout=5)
-        response.raise_for_status()
-        data =  response.json()
-
-        if data.get("role") != 'artist':
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-            )
-
-    except requests.exceptions.RequestException as e:
-        print(f"Error al llamar al microservicio de usuarios: {e}")
-        return None
 
     #TOTAL SEGUIDORES
     url = f"{os.getenv("CONTENIDOS_SERVICE_BASE_URL")}/artists/{uuid}"
@@ -41,15 +26,16 @@ def getArtistStats (uuid: str):
         #print(nFollowers)
 
     except requests.exceptions.RequestException as e:
-        print(f"Error al llamar al microservicio de contenidos: {e}")
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
     #TOTAL INGRESOS, PRODUCTOS VENDIDOS, REPRODUCCIONES Y TIPOS VENDIDOS
     url = f"{os.getenv("COMPRAS_SERVICE_BASE_URL")}/orders"
 
     try:
         response = requests.get(url, headers=headers, timeout=5)
-        response.raise_for_status()  # Lanza excepción si status >= 400
+        response.raise_for_status()
         data = response.json()
 
         earn = 0
@@ -72,7 +58,6 @@ def getArtistStats (uuid: str):
                 priceItem = product.get("price")
                 quantity = product.get("quantity")
                 format = product.get("format")
-                #plays = product.get("plays")
 
                 if type == "song":
                     urlType = f"{os.getenv("CONTENIDOS_SERVICE_BASE_URL")}/songs/{productUuid}"
@@ -87,9 +72,10 @@ def getArtistStats (uuid: str):
 
                 if uuid == authorUuid:
                     earn = earn + (priceItem * quantity)
-                    #totalPlays = totalPlays + plays
 
-                    if type == "song": totalSongs += 1
+                    if type == "song":
+                        totalSongs += 1
+                        totalPlays = totalPlays + responseData.get("plays")
                     if type == "album": totalAlbums += 1
                     if type == "merch": totalMerch += 1
                     if format == "cd": totalCds += 1
@@ -97,15 +83,20 @@ def getArtistStats (uuid: str):
                     if format == "cassette": totalCassettes += 1
                     if format == "digital": totalDigitals += 1
 
-        print(earn)
-        print(totalSongs)
-        print(totalAlbums)
-        print(totalMerch)
-        print(totalCds)
-        print(totalVinyls)
-        print(totalCassettes)
-        print(totalDigitals)
+        return {
+            "totalFollowers": nFollowers,
+            "earn": earn,
+            "totalPlays": totalPlays,
+            "totalSongs": totalSongs,
+            "totalAlbums": totalAlbums,
+            "totalMerch": totalMerch,
+            "totalCds": totalCds,
+            "totalVinyls": totalVinyls,
+            "totalCassettes": totalCassettes,
+            "totalDigitals": totalDigitals,
+        }
 
     except requests.exceptions.RequestException as e:
-        print(f"Error al llamar al microservicio de contenidos: {e}")
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
