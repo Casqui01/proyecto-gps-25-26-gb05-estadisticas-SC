@@ -1,28 +1,27 @@
-import requests
 import os
+import requests
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, status
-from supabaseAuth import get_token
+from supabaseAuth import gestor_token
+from fastapi import HTTPException, status
 
 def getArtistStats (uuid: str):
     load_dotenv()
+    token:str = gestor_token.get_token()
 
-    token:str = get_token()
     #COMPROBAR QUE ES ARTISTA Y QUE EXISTE
     url = f"{os.getenv("USUARIOS_SERVICE_BASE_URL")}/users/{uuid}"
     headers = {
         "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"  # Opcional, pero buena práctica
+        "Content-Type": "application/json"
     }
     try:
         response = requests.get(url,headers=headers, timeout=5)
-        response.raise_for_status()  # Lanza excepción si status >= 400
+        response.raise_for_status()
         data =  response.json()
 
         if data.get("role") != 'artist':
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,  # Es igual a 400
-                detail="El UUID proporcionado no es válido para el cálculo de estadísticas."
+                status_code=status.HTTP_400_BAD_REQUEST,
             )
 
     except requests.exceptions.RequestException as e:
@@ -34,20 +33,18 @@ def getArtistStats (uuid: str):
 
     try:
         response = requests.get(url, headers=headers, timeout=5)
-        response.raise_for_status()  # Lanza excepción si status >= 400
+        response.raise_for_status()
         data = response.json()
 
         # TOTAL SEGUIDORES
         nFollowers = len(data.get("followers",[]))
-
-        #TOTAL REPRODUCCIONES
         #print(nFollowers)
 
     except requests.exceptions.RequestException as e:
         print(f"Error al llamar al microservicio de contenidos: {e}")
         return None
 
-    #TOTAL INGRESOS Y PRODUCTOS VENDIDOS
+    #TOTAL INGRESOS, PRODUCTOS VENDIDOS, REPRODUCCIONES Y TIPOS VENDIDOS
     url = f"{os.getenv("COMPRAS_SERVICE_BASE_URL")}/orders"
 
     try:
@@ -75,7 +72,7 @@ def getArtistStats (uuid: str):
                 priceItem = product.get("price")
                 quantity = product.get("quantity")
                 format = product.get("format")
-                plays = product.get("plays")
+                #plays = product.get("plays")
 
                 if type == "song":
                     urlType = f"{os.getenv("CONTENIDOS_SERVICE_BASE_URL")}/songs/{productUuid}"
@@ -90,7 +87,7 @@ def getArtistStats (uuid: str):
 
                 if uuid == authorUuid:
                     earn = earn + (priceItem * quantity)
-                    totalPlays = totalPlays + plays
+                    #totalPlays = totalPlays + plays
 
                     if type == "song": totalSongs += 1
                     if type == "album": totalAlbums += 1
@@ -108,8 +105,7 @@ def getArtistStats (uuid: str):
         print(totalVinyls)
         print(totalCassettes)
         print(totalDigitals)
+
     except requests.exceptions.RequestException as e:
         print(f"Error al llamar al microservicio de contenidos: {e}")
         return None
-
-
