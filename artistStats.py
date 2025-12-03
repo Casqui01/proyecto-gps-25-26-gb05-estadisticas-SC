@@ -22,8 +22,8 @@ def getArtistStats (uuid: str):
         data = response.json()
 
         # TOTAL SEGUIDORES
-        nFollowers = len(data.get("followers",[]))
-        #print(nFollowers)
+        n_followers = len(data.get("followers",[]))
+        #print(n_followers)
 
     except requests.exceptions.RequestException as e:
         raise HTTPException(
