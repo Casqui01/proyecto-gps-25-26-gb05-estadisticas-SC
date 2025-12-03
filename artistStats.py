@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from supabaseAuth import gestor_token
 from fastapi import HTTPException, status
 
-def getArtistStats (uuid: str):
+def get_artist_stats (uuid: str):
     load_dotenv()
 
     token:str = gestor_token.get_token()
