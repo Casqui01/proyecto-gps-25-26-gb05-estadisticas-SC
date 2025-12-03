@@ -84,7 +84,7 @@ def getArtistStats (uuid: str):
                     if format == "digital": totalDigitals += 1
 
         return {
-            "totalFollowers": nFollowers,
+            "totalFollowers": n_followers,
             "earn": earn,
             "totalPlays": totalPlays,
             "totalSongs": totalSongs,
