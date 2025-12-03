@@ -1,4 +1,4 @@
-from artistStats import getArtistStats
+from artistStats import get_artist_stats
 from roleChecker import RoleChecker
 from userStats import getUserStats
 from fastapi import FastAPI, Depends
