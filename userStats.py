@@ -27,8 +27,8 @@ def getUserStats (uuid: str, seconds_to_add: int = 0):
             if orderStatus != 'cancelled' and orderStatus != 'pending_payment':
                 orderUserUuid = order.get("userUuid")
                 if orderUserUuid == uuid:
-                    totalPrice = order.get("totalPrice")
-                    totalGastado += totalPrice
+                    total_price = order.get("totalPrice")
+                    totalGastado += total_price
                     # print(totalGastado)
 
     except requests.exceptions.RequestException as e:
